@@ -5,7 +5,6 @@ namespace App\EventSubscriber;
 use App\Event\AfterDtoCreatedEvent;
 use App\Service\ServiceException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DtoSubscriber implements EventSubscriberInterface
