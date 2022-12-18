@@ -5,8 +5,12 @@ namespace App\Controller;
 use App\Cache\PromotionCache;
 use App\DTO\LowestPriceEnquiry;
 use App\Filter\PromotionsFilterInterface;
+use App\Repository\AuthKeyRepository;
 use App\Repository\ProductRepository;
 use App\Service\Serializer\DTOSerializer;
+use App\Service\ServiceException;
+use App\Service\ServiceExceptionData;
+use App\Service\ValidationExceptionData;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,7 +23,8 @@ class ProductsController extends AbstractController
 {
     public function __construct(
         private readonly ProductRepository      $repository,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private AuthKeyRepository               $authKeyRepository
     )
     {
     }
@@ -27,10 +32,19 @@ class ProductsController extends AbstractController
     #[Route('/products/{id}/lowest-price', name: 'lowest-price', methods: 'POST')]
     public function lowestPrice(Request $request, int $id, DTOSerializer $serializer, PromotionsFilterInterface $promotionsFilter, PromotionCache $promotionCache): Response
     {
+        $authorization = $request->headers->get('Authorization');
+        $authKey = $this->authKeyRepository->find(1)->getKeyName();
+
+        if (!($authorization == $authKey)) {
+            $accessExceptionData = new ServiceExceptionData(403, 'Access denied.');
+            throw new ServiceException($accessExceptionData);
+        }
+
         /** @var LowestPriceEnquiry $lowestPriceEnquiry */
         $lowestPriceEnquiry = $serializer->deserialize(
             $request->getContent(), LowestPriceEnquiry::class, 'json'
         );
+
 
         $product = $this->repository->findOrFail($id);
 
