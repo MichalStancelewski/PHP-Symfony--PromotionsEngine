@@ -29,12 +29,11 @@ class ProductsController extends AbstractController
     {
     }
 
-    #[
-        Route('/products/{id}/lowest-price', name: 'lowest-price', methods: 'POST')]
+    #[Route('/products/{id}/lowest-price', name: 'lowest-price', methods: 'POST')]
     public function lowestPrice(Request $request, int $id, DTOSerializer $serializer, PromotionsFilterInterface $promotionsFilter, PromotionCache $promotionCache): Response
     {
         $authorizationValidation = new AuthorizationValidation($this->authKeyRepository);
-        $xd = $authorizationValidation->validate($request->headers->get('Authorization'));
+        $authorizationValidation->validate($request->headers->get('Authorization'));
 
         /** @var LowestPriceEnquiry $lowestPriceEnquiry */
         $lowestPriceEnquiry = $serializer->deserialize(
